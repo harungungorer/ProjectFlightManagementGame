@@ -11,6 +11,8 @@ public class Plane : MonoBehaviour {
 	bool done = false;
     List<Vector2> points;
     Rigidbody2D body;
+    bool objectClicked = false;
+
     // Use this for initialization
     void Start () {
         body = GetComponent<Rigidbody2D>();
@@ -20,10 +22,11 @@ public class Plane : MonoBehaviour {
 	void Update () 
 	{
 
-        if (Input.GetMouseButtonUp(0))
+        if (Input.GetMouseButtonUp(0) && objectClicked)
 		{
 			//activeLine = null;
 			done = true;
+            objectClicked = false;
             points = activeLine.getPoints();
             StartCoroutine(StartFollowing());
         }
@@ -42,7 +45,7 @@ public class Plane : MonoBehaviour {
 			activeLine.removeOldLine ();
 			activeLine = null;
 		}
-
+        objectClicked = true;
 		GameObject lineGO = Instantiate(linePrefab);
 		activeLine = lineGO.GetComponent<Line>();
 		done = false;
@@ -58,9 +61,27 @@ public class Plane : MonoBehaviour {
 		Debug.Log ("pointA:"+pointA);
 		Debug.Log ("pointB:"+pointB);
 		while (counter<= points.Count-1) {
-            FaceMoveDirection(pointB);
-            yield return StartCoroutine(MoveObject(transform, pointA, pointB, 3.0f));
-			counter++;
+            if(counter%2==0)
+                FaceMoveDirection(pointB);
+            yield return StartCoroutine(MoveObject(transform, pointA, pointB, 0.6f));
+            StartCoroutine(removePassedLine(counter));
+            //activeLine.lineRenderer.SetPosition(0, points[counter+1]);
+
+            //activeLine.lineRenderer.positionCount = activeLine.lineRenderer.positionCount-1;
+
+            /* List<Vector2> tempPoints = points;
+             int size = activeLine.lineRenderer.positionCount-1;
+             activeLine.lineRenderer.positionCount = 0;
+             tempPoints.RemoveRange(0,counter+1);
+             for (int i = 0; i < tempPoints.Count; i++)
+             {
+                 activeLine.lineRenderer.positionCount = i+1;
+                 activeLine.lineRenderer.SetPosition(i, tempPoints[i]);
+             }*/
+
+
+
+            counter++;
 			if(counter<= points.Count-1)
 			{
 				pointA=pointB;
@@ -71,10 +92,31 @@ public class Plane : MonoBehaviour {
 		}
 	}
 
-	IEnumerator MoveObject (Transform thisTransform, Vector3 startPos, Vector3 endPos, float time) {
+    IEnumerator removePassedLine(int counter)
+    {
+        List<Vector2> tempPoints = points;
+        int size = activeLine.lineRenderer.positionCount - 1;
+        /*activeLine.lineRenderer.positionCount = 0;
+        tempPoints.RemoveRange(0,counter+1);
+        for (int i = 0; i < tempPoints.Count; i++)
+        {
+            activeLine.lineRenderer.positionCount = i+1;
+            activeLine.lineRenderer.SetPosition(i, tempPoints[i]);
+        }*/
+        for (int i = 0; i < size; i++)
+        {
+            Vector2 temp = activeLine.lineRenderer.GetPosition(i + 1);
+            activeLine.lineRenderer.SetPosition(i, temp);
+        }
+        activeLine.lineRenderer.positionCount = activeLine.lineRenderer.positionCount - 1;
+        yield return null;
+    }
+
+
+    IEnumerator MoveObject (Transform thisTransform, Vector3 startPos, Vector3 endPos, float time) {
 		var i= 0.0f;
-		var rate= 6.0f/time;
-		while (i < 1.0f) {
+		var rate= 2.0f/time;
+		while (i < 1.0f && !objectClicked) {
 			i += Time.deltaTime * rate;
 			thisTransform.position = Vector3.Lerp(startPos, endPos, i);
 
@@ -94,10 +136,16 @@ public class Plane : MonoBehaviour {
             //transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.FromToRotation(transform.position, endPos - transform.position), Time.deltaTime);
             //LookAt(endPos);
 
-
             yield return null; 
 		}
 	}
+
+    IEnumerator ss(Transform thisTransform, Vector3 startPos, Vector3 endPos, float time)
+    {
+
+        thisTransform.position = Vector3.Lerp(startPos, endPos, Mathf.Sin(Time.time) / 2 + .05f);
+        yield return null;
+    }
 
     public void FaceMoveDirection(Vector3 target)
     {
