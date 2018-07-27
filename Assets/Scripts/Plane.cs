@@ -43,12 +43,20 @@ public class Plane : MonoBehaviour {
 		if (activeLine != null) 
 		{
 			activeLine.removeOldLine ();
-			activeLine = null;
-		}
-        objectClicked = true;
-		GameObject lineGO = Instantiate(linePrefab);
-		activeLine = lineGO.GetComponent<Line>();
-		done = false;
+            //Destroy(activeLine);
+            //activeLine.enabled = false;
+            //activeLine = null;
+            objectClicked = true;
+            done = false;
+        }
+        if(activeLine == null)
+        {
+            GameObject lineGO = Instantiate(linePrefab);
+            activeLine = lineGO.GetComponent<Line>();
+            objectClicked = true;
+            done = false;
+        }
+
 		Debug.Log ("asdasd");
 
 	}
@@ -90,6 +98,8 @@ public class Plane : MonoBehaviour {
 
 			//yield return StartCoroutine(MoveObject(transform, pointB, pointA, 3.0f));
 		}
+        activeLine.removeOldLine();
+        Debug.Log("ARRIVED");
 	}
 
     IEnumerator removePassedLine(int counter)
@@ -108,7 +118,8 @@ public class Plane : MonoBehaviour {
             Vector2 temp = activeLine.lineRenderer.GetPosition(i + 1);
             activeLine.lineRenderer.SetPosition(i, temp);
         }
-        activeLine.lineRenderer.positionCount = activeLine.lineRenderer.positionCount - 1;
+        if(activeLine.lineRenderer.positionCount < 0)
+            activeLine.lineRenderer.positionCount = activeLine.lineRenderer.positionCount - 1;
         yield return null;
     }
 

@@ -16,8 +16,9 @@ public class Line : MonoBehaviour {
 			SetPoint(mousePos);
 			return;
 		}
-
-		if (Vector2.Distance(points.Last(), mousePos) > .1f)
+        else
+            SetPoint(mousePos);
+        if (Vector2.Distance(points.Last(), mousePos) > .1f)
 			SetPoint(mousePos);
 	}
 
@@ -33,9 +34,9 @@ public class Line : MonoBehaviour {
 	public void removeOldLine()
 	{
 
-		lineRenderer.SetVertexCount(0);
+		lineRenderer.positionCount = 0;
 		if(points != null)
-			points.RemoveRange(0,points.Count);
+			points.Clear();
 		
 	}
 
